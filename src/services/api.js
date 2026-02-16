@@ -153,7 +153,7 @@ export const paymentMethodAPI = {
 export const getImageUrl = (path) => {
   if (!path) return "/images/no-image.png";
   if (path.startsWith("http")) return path;
-  return `${PUBLIC_URL}/storage/${path}`;
+  return `${import.meta.env.VITE_PUBLIC_URL || "http://127.0.0.1:8000"}/storage/${path}`;
 };
 
 export const formatCurrency = (amount) => {
