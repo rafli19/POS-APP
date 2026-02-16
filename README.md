@@ -90,9 +90,9 @@ Login dengan credentials dari backend (setelah seeding):
 
 | Role | Email | Password | Dashboard Access |
 |------|-------|----------|------------------|
-| **Admin** | admin@example.com | password | Dashboard, Products CRUD, Categories CRUD, Transaction History, Reports |
-| **Owner** | owner@example.com | password | Dashboard, Products (view), Transaction History, Reports |
-| **Kasir** | kasir@example.com | password | Dashboard, Products (view), Create Transaction, Verify Payment |
+| **Admin** | admin@mail.com | admin123 | Dashboard, Products CRUD, Categories CRUD, Transaction History, Reports |
+| **Owner** | owner@mail.com | owner123 | Dashboard, Products (view), Transaction History, Reports |
+| **Kasir** | kasir@mail.com | kasir123 | Dashboard, Products (view), Create Transaction, Verify Payment |
 
 ## 📸 Screenshots
 
@@ -455,6 +455,6 @@ This project is licensed under the MIT License.
 
 ---
 
-**Made with ❤️ by Rafael Void**
+**Made by Raferl**
 
 *Last Updated: February 2026*
