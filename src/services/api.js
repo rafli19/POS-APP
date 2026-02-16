@@ -64,7 +64,6 @@ const buildParams = (params = {}) => {
 
 // Auth API
 export const authAPI = {
-  register: (data) => api.post("/register", data),
   login: (data) => api.post("/login", data),
   logout: () => api.post("/logout"),
   me: () => api.get("/me"),
