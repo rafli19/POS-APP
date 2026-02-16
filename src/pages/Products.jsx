@@ -8,93 +8,97 @@ import {
 } from "../services/api";
 import Layout from "../components/Layout";
 
-// Memoized Product Card Component
+// ==================== COMPONENTS ====================
+
 const ProductCard = memo(
-  ({ product, isAdmin, onViewDetail, onEdit, onDelete }) => {
-    return (
-      <div
-        className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow flex flex-col h-full cursor-pointer"
-        onClick={() => onViewDetail(product)}
-      >
-        <div className="relative">
-          <img
-            src={getImageUrl(product.image)}
-            alt={product.name}
-            className="w-full h-32 sm:h-48 object-cover rounded-t-lg"
-            loading="lazy"
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = "/images/no-image.png";
-            }}
-          />
-          {product.stock <= product.min_stock && (
-            <span className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded">
-              Low Stock
-            </span>
-          )}
-        </div>
-        <div className="p-2 sm:p-4 flex-1 flex flex-col">
-          <h3 className="font-semibold text-sm sm:text-base text-gray-900 truncate">
-            {product.name}
-          </h3>
-          <p className="text-xs text-gray-600 mt-1 truncate">
-            SKU: {product.sku}
-          </p>
-          <p className="text-xs text-gray-500 mt-0.5 truncate">
-            {product.category?.name || "No Category"}
-          </p>
-          <p className="text-base sm:text-lg font-bold text-blue-600 mt-2">
-            {formatCurrency(product.price)}
-          </p>
-          <p
-            className={`text-xs sm:text-sm font-medium mt-1 ${
-              product.stock <= product.min_stock
-                ? "text-red-600"
-                : "text-gray-600"
-            }`}
-          >
-            Stock: {product.stock || 0}
-          </p>
-        </div>
-        {isAdmin && (
-          <div className="p-2 flex gap-2" onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={() => onEdit(product)}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-2 py-1.5 rounded text-xs transition-colors active:scale-95"
-            >
-              Edit
-            </button>
-            <button
-              onClick={() => onDelete(product.id)}
-              className="flex-1 bg-red-600 hover:bg-red-700 text-white px-2 py-1.5 rounded text-xs transition-colors active:scale-95"
-            >
-              Delete
-            </button>
-          </div>
+  ({ product, isAdmin, onViewDetail, onEdit, onDelete }) => (
+    <div
+      className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow flex flex-col h-full cursor-pointer"
+      onClick={() => onViewDetail(product)}
+    >
+      <div className="relative">
+        <img
+          src={
+            product.image ? getImageUrl(product.image) : "/images/no-image.png"
+          }
+          alt={product.name}
+          className="w-full h-32 sm:h-48 object-cover rounded-t-lg"
+          loading="lazy"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "/images/no-image.png";
+          }}
+        />
+        {product.stock <= product.min_stock && (
+          <span className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded">
+            Low Stock
+          </span>
         )}
       </div>
-    );
-  },
+      <div className="p-2 sm:p-4 flex-1 flex flex-col">
+        <h3 className="font-semibold text-sm sm:text-base text-gray-900 truncate">
+          {product.name}
+        </h3>
+        <p className="text-xs text-gray-600 mt-1 truncate">
+          SKU: {product.sku}
+        </p>
+        <p className="text-xs text-gray-500 mt-0.5 truncate">
+          {product.category?.name || "No Category"}
+        </p>
+        <p className="text-base sm:text-lg font-bold text-blue-600 mt-2">
+          {formatCurrency(product.price)}
+        </p>
+        <p
+          className={`text-xs sm:text-sm font-medium mt-1 ${
+            product.stock <= product.min_stock
+              ? "text-red-600"
+              : "text-gray-600"
+          }`}
+        >
+          Stock: {product.stock || 0}
+        </p>
+      </div>
+      {isAdmin && (
+        <div className="p-2 flex gap-2" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={() => onEdit(product)}
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-2 py-1.5 rounded text-xs transition-colors active:scale-95"
+          >
+            Edit
+          </button>
+          <button
+            onClick={() => onDelete(product.id)}
+            className="flex-1 bg-red-600 hover:bg-red-700 text-white px-2 py-1.5 rounded text-xs transition-colors active:scale-95"
+          >
+            Delete
+          </button>
+        </div>
+      )}
+    </div>
+  ),
 );
 
 ProductCard.displayName = "ProductCard";
+
+// ==================== MAIN COMPONENT ====================
 
 const Products = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
 
-  // ==================== STATE MANAGEMENT ====================
+  // ==================== STATE ====================
+  // Data State
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+
+  // UI State
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [formErrors, setFormErrors] = useState({});
 
-  // Form Data
+  // Form State
   const [formData, setFormData] = useState({
     category_id: "",
     name: "",
@@ -108,44 +112,39 @@ const Products = () => {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [editingId, setEditingId] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState("");
 
-  // Pagination
+  // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 10;
 
-  // Filters
+  // Filter State
   const [searchName, setSearchName] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [searchDebounce, setSearchDebounce] = useState("");
 
   // ==================== EFFECTS ====================
-
-  // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => setSearchDebounce(searchName), 800);
     return () => clearTimeout(timer);
   }, [searchName]);
 
-  // Fetch categories once on mount
   useEffect(() => {
     fetchCategories();
   }, []);
 
-  // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchDebounce, filterCategory]);
 
-  // Fetch products when page or filters change
   useEffect(() => {
     fetchProducts(currentPage);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, searchDebounce, filterCategory]);
 
-  // ==================== API CALLS ====================
-
+  // ==================== API METHODS ====================
   const fetchProducts = async (page = 1) => {
     try {
       setLoading(true);
@@ -175,15 +174,11 @@ const Products = () => {
       }
     } catch (err) {
       console.error("Error loading categories:", err);
-      // Silently fail if user doesn't have permission
-      if (err.response?.status === 403) {
-        setCategories([]);
-      }
+      if (err.response?.status === 403) setCategories([]);
     }
   };
 
   // ==================== FORM HANDLERS ====================
-
   const resetForm = useCallback(() => {
     setFormData({
       category_id: "",
@@ -211,7 +206,7 @@ const Products = () => {
       Object.entries(formData).forEach(([key, value]) => {
         if (key === "is_active") {
           fd.append(key, value ? 1 : 0);
-        } else if (value !== "" && value !== null && value !== undefined) {
+        } else if (value) {
           fd.append(key, value);
         }
       });
@@ -259,7 +254,7 @@ const Products = () => {
   }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Yakin ingin menghapus produk ini?")) return;
+    if (!confirm("Yakin ingin menghapus produk ini?")) return;
 
     try {
       await productAPI.delete(id);
@@ -292,29 +287,23 @@ const Products = () => {
   };
 
   // ==================== UI HANDLERS ====================
-
   const handleSearch = useCallback((e) => setSearchName(e.target.value), []);
-
   const handleCategoryFilter = useCallback(
     (e) => setFilterCategory(e.target.value),
     [],
   );
-
   const handleClearFilters = useCallback(() => {
     setSearchName("");
     setFilterCategory("");
   }, []);
-
   const handleViewDetail = useCallback((product) => {
     setSelectedProduct(product);
     setShowDetailModal(true);
   }, []);
-
   const closeDetailModal = useCallback(() => {
     setShowDetailModal(false);
     setSelectedProduct(null);
   }, []);
-
   const handlePageChange = useCallback(
     (page) => {
       if (page >= 1 && page <= totalPages) {
@@ -326,7 +315,6 @@ const Products = () => {
   );
 
   // ==================== COMPUTED VALUES ====================
-
   const pageNumbers = useMemo(() => {
     const pages = [];
     const maxVisible = 5;
@@ -338,9 +326,7 @@ const Products = () => {
       startPage = Math.max(1, endPage - maxVisible + 1);
     }
 
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
-    }
+    for (let i = startPage; i <= endPage; i++) pages.push(i);
     return pages;
   }, [currentPage, totalPages]);
 
@@ -351,17 +337,14 @@ const Products = () => {
   }, [currentPage, itemsPerPage, totalItems]);
 
   const getStockStatus = useCallback((product) => {
-    if (product.stock === 0) {
+    if (product.stock === 0)
       return { text: "Out of Stock", color: "bg-red-100 text-red-800" };
-    }
-    if (product.stock <= product.min_stock) {
+    if (product.stock <= product.min_stock)
       return { text: "Low Stock", color: "bg-orange-100 text-orange-600" };
-    }
     return { text: "In Stock", color: "bg-green-100 text-green-800" };
   }, []);
 
-  // ==================== LOADING STATE ====================
-
+  // ==================== RENDER ====================
   if (loading && currentPage === 1 && !products.length) {
     return (
       <Layout>
@@ -375,12 +358,10 @@ const Products = () => {
     );
   }
 
-  // ==================== RENDER ====================
-
   return (
     <Layout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-        {/* ==================== HEADER ==================== */}
+        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
@@ -400,7 +381,7 @@ const Products = () => {
           )}
         </div>
 
-        {/* ==================== FILTERS ==================== */}
+        {/* Filters */}
         <div className="bg-white rounded-lg shadow p-3 sm:p-4 mb-4 sm:mb-6">
           <div className="flex flex-col gap-3">
             <div className="flex-1">
@@ -447,7 +428,7 @@ const Products = () => {
           </div>
         </div>
 
-        {/* ==================== PRODUCTS GRID ==================== */}
+        {/* Products Grid */}
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" />
@@ -476,7 +457,7 @@ const Products = () => {
               ))}
             </div>
 
-            {/* ==================== PAGINATION ==================== */}
+            {/* Pagination */}
             {totalPages > 1 && (
               <div className="bg-white rounded-lg shadow p-3 sm:p-4">
                 <div className="flex items-center justify-between">
@@ -542,7 +523,7 @@ const Products = () => {
         )}
       </div>
 
-      {/* ==================== SUCCESS MODAL ==================== */}
+      {/* Success Modal */}
       {showSuccess && (
         <div className="fixed inset-0 flex items-center justify-center z-[60] p-4">
           <div className="bg-white rounded-xl shadow-lg p-6 max-w-sm w-full">
@@ -570,7 +551,7 @@ const Products = () => {
         </div>
       )}
 
-      {/* ==================== DETAIL MODAL ==================== */}
+      {/* Detail Modal */}
       {showDetailModal && selectedProduct && (
         <>
           <div
@@ -609,7 +590,11 @@ const Products = () => {
                 <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
                   <div className="w-full md:w-1/2">
                     <img
-                      src={getImageUrl(selectedProduct.image)}
+                      src={
+                        selectedProduct.image
+                          ? getImageUrl(selectedProduct.image)
+                          : "/images/no-image.png"
+                      }
                       alt={selectedProduct.name}
                       className="w-full h-64 sm:h-80 object-cover rounded-lg shadow-md"
                       loading="lazy"
@@ -635,9 +620,7 @@ const Products = () => {
                     </div>
                     <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                       <span
-                        className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium ${
-                          getStockStatus(selectedProduct).color
-                        }`}
+                        className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium ${getStockStatus(selectedProduct).color}`}
                       >
                         {getStockStatus(selectedProduct).text}
                       </span>
@@ -713,7 +696,7 @@ const Products = () => {
         </>
       )}
 
-      {/* ==================== FORM MODAL (ADMIN ONLY) ==================== */}
+      {/* Form Modal */}
       {showModal && isAdmin && (
         <>
           <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40" />
@@ -822,9 +805,7 @@ const Products = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, category_id: e.target.value })
                     }
-                    className={`w-full px-3 sm:px-4 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${
-                      formErrors.category_id ? "border-red-500" : ""
-                    }`}
+                    className={`w-full px-3 sm:px-4 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${formErrors.category_id ? "border-red-500" : ""}`}
                   >
                     <option value="">Pilih Kategori</option>
                     {categories.map((cat) => (
@@ -853,9 +834,7 @@ const Products = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
                       }
-                      className={`w-full px-3 sm:px-4 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${
-                        formErrors.name ? "border-red-500" : ""
-                      }`}
+                      className={`w-full px-3 sm:px-4 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${formErrors.name ? "border-red-500" : ""}`}
                       placeholder="Nama produk"
                     />
                     {formErrors.name && (
@@ -875,9 +854,7 @@ const Products = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, sku: e.target.value })
                       }
-                      className={`w-full px-3 sm:px-4 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${
-                        formErrors.sku ? "border-red-500" : ""
-                      }`}
+                      className={`w-full px-3 sm:px-4 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${formErrors.sku ? "border-red-500" : ""}`}
                       placeholder="SKU"
                     />
                     {formErrors.sku && (
@@ -919,9 +896,7 @@ const Products = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, price: e.target.value })
                       }
-                      className={`w-full px-2 sm:px-4 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${
-                        formErrors.price ? "border-red-500" : ""
-                      }`}
+                      className={`w-full px-2 sm:px-4 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${formErrors.price ? "border-red-500" : ""}`}
                       placeholder="Harga"
                     />
                   </div>
@@ -937,9 +912,7 @@ const Products = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, stock: e.target.value })
                       }
-                      className={`w-full px-2 sm:px-4 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${
-                        formErrors.stock ? "border-red-500" : ""
-                      }`}
+                      className={`w-full px-2 sm:px-4 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${formErrors.stock ? "border-red-500" : ""}`}
                       placeholder="Stok"
                     />
                   </div>
@@ -955,9 +928,7 @@ const Products = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, min_stock: e.target.value })
                       }
-                      className={`w-full px-2 sm:px-4 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${
-                        formErrors.min_stock ? "border-red-500" : ""
-                      }`}
+                      className={`w-full px-2 sm:px-4 py-2 sm:py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${formErrors.min_stock ? "border-red-500" : ""}`}
                       placeholder="Min"
                     />
                   </div>
