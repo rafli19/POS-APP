@@ -113,7 +113,7 @@ Login dengan credentials dari backend (setelah seeding):
 *Product management dengan search, filter, dan pagination*
 
 ### Transaction - Kasir
-![Transaction](screenshots/transaction.png)
+![Transaction](screenshots/transactions.png)
 *Interface transaksi untuk kasir dengan cart system*
 
 ### Reports - Admin/Owner
