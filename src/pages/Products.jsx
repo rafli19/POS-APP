@@ -8,8 +8,6 @@ import {
 } from "../services/api";
 import Layout from "../components/Layout";
 
-// ==================== COMPONENTS ====================
-
 const ProductCard = memo(
   ({ product, isAdmin, onViewDetail, onEdit, onDelete }) => (
     <div
@@ -80,25 +78,17 @@ const ProductCard = memo(
 
 ProductCard.displayName = "ProductCard";
 
-// ==================== MAIN COMPONENT ====================
-
 const Products = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
 
-  // ==================== STATE ====================
-  // Data State
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-
-  // UI State
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-
-  // Form State
   const [formData, setFormData] = useState({
     category_id: "",
     name: "",
@@ -114,19 +104,14 @@ const Products = () => {
   const [editingId, setEditingId] = useState(null);
   const [formErrors, setFormErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
-
-  // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 10;
-
-  // Filter State
   const [searchName, setSearchName] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [searchDebounce, setSearchDebounce] = useState("");
 
-  // ==================== EFFECTS ====================
   useEffect(() => {
     const timer = setTimeout(() => setSearchDebounce(searchName), 800);
     return () => clearTimeout(timer);
@@ -144,7 +129,6 @@ const Products = () => {
     fetchProducts(currentPage);
   }, [currentPage, searchDebounce, filterCategory]);
 
-  // ==================== API METHODS ====================
   const fetchProducts = async (page = 1) => {
     try {
       setLoading(true);
@@ -174,11 +158,12 @@ const Products = () => {
       }
     } catch (err) {
       console.error("Error loading categories:", err);
-      if (err.response?.status === 403) setCategories([]);
+      if (err.response?.status === 403) {
+        setCategories([]);
+      }
     }
   };
 
-  // ==================== FORM HANDLERS ====================
   const resetForm = useCallback(() => {
     setFormData({
       category_id: "",
@@ -206,7 +191,7 @@ const Products = () => {
       Object.entries(formData).forEach(([key, value]) => {
         if (key === "is_active") {
           fd.append(key, value ? 1 : 0);
-        } else if (value) {
+        } else if (value !== null && value !== undefined && value !== "") {
           fd.append(key, value);
         }
       });
@@ -247,7 +232,10 @@ const Products = () => {
       min_stock: product.min_stock?.toString() || "",
       is_active: product.is_active ?? true,
     });
-    setImagePreview(product.image || null);
+
+    const imageUrl = product.image_url || product.image;
+    setImagePreview(imageUrl ? getImageUrl(imageUrl) : null);
+    setImageFile(null);
     setEditingId(product.id);
     setShowModal(true);
     setFormErrors({});
@@ -280,13 +268,19 @@ const Products = () => {
       return;
     }
 
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      alert("Format file tidak didukung! Gunakan JPG, PNG, atau WebP");
+      e.target.value = "";
+      return;
+    }
+
     setImageFile(file);
     const reader = new FileReader();
     reader.onloadend = () => setImagePreview(reader.result);
     reader.readAsDataURL(file);
   };
 
-  // ==================== UI HANDLERS ====================
   const handleSearch = useCallback((e) => setSearchName(e.target.value), []);
   const handleCategoryFilter = useCallback(
     (e) => setFilterCategory(e.target.value),
@@ -314,7 +308,6 @@ const Products = () => {
     [totalPages],
   );
 
-  // ==================== COMPUTED VALUES ====================
   const pageNumbers = useMemo(() => {
     const pages = [];
     const maxVisible = 5;
@@ -344,7 +337,6 @@ const Products = () => {
     return { text: "In Stock", color: "bg-green-100 text-green-800" };
   }, []);
 
-  // ==================== RENDER ====================
   if (loading && currentPage === 1 && !products.length) {
     return (
       <Layout>
@@ -361,7 +353,6 @@ const Products = () => {
   return (
     <Layout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
@@ -381,7 +372,6 @@ const Products = () => {
           )}
         </div>
 
-        {/* Filters */}
         <div className="bg-white rounded-lg shadow p-3 sm:p-4 mb-4 sm:mb-6">
           <div className="flex flex-col gap-3">
             <div className="flex-1">
@@ -428,7 +418,6 @@ const Products = () => {
           </div>
         </div>
 
-        {/* Products Grid */}
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" />
@@ -457,7 +446,6 @@ const Products = () => {
               ))}
             </div>
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <div className="bg-white rounded-lg shadow p-3 sm:p-4">
                 <div className="flex items-center justify-between">
@@ -523,7 +511,6 @@ const Products = () => {
         )}
       </div>
 
-      {/* Success Modal */}
       {showSuccess && (
         <div className="fixed inset-0 flex items-center justify-center z-[60] p-4">
           <div className="bg-white rounded-xl shadow-lg p-6 max-w-sm w-full">
@@ -551,7 +538,6 @@ const Products = () => {
         </div>
       )}
 
-      {/* Detail Modal */}
       {showDetailModal && selectedProduct && (
         <>
           <div
@@ -620,7 +606,9 @@ const Products = () => {
                     </div>
                     <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                       <span
-                        className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium ${getStockStatus(selectedProduct).color}`}
+                        className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium ${
+                          getStockStatus(selectedProduct).color
+                        }`}
                       >
                         {getStockStatus(selectedProduct).text}
                       </span>
@@ -696,7 +684,6 @@ const Products = () => {
         </>
       )}
 
-      {/* Form Modal */}
       {showModal && isAdmin && (
         <>
           <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40" />
@@ -729,7 +716,6 @@ const Products = () => {
                 onSubmit={handleSubmit}
                 className="p-4 sm:p-6 space-y-3 sm:space-y-4"
               >
-                {/* Image Upload */}
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                     Product Image
@@ -794,7 +780,6 @@ const Products = () => {
                   )}
                 </div>
 
-                {/* Category */}
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                     Category *
@@ -821,7 +806,6 @@ const Products = () => {
                   )}
                 </div>
 
-                {/* Name & SKU */}
                 <div className="grid grid-cols-2 gap-2 sm:gap-4">
                   <div>
                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
@@ -865,7 +849,6 @@ const Products = () => {
                   </div>
                 </div>
 
-                {/* Description */}
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                     Description
@@ -881,7 +864,6 @@ const Products = () => {
                   />
                 </div>
 
-                {/* Price, Stock, Min Stock */}
                 <div className="grid grid-cols-3 gap-2">
                   <div>
                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
@@ -934,7 +916,6 @@ const Products = () => {
                   </div>
                 </div>
 
-                {/* Active Checkbox */}
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -949,7 +930,6 @@ const Products = () => {
                   </label>
                 </div>
 
-                {/* Submit Buttons */}
                 <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 pt-3">
                   <button
                     type="submit"
